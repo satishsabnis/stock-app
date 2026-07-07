@@ -14,7 +14,7 @@ export default function Home() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`http://127.0.0.1:8000/api/predict/${tickerSymbol}`);
+      const response = await fetch(`https://stock-app-yd3n.onrender.com/api/predict/${tickerSymbol}`);
       
       if (!response.ok) {
         throw new Error("Failed to communicate with backend engine.");
