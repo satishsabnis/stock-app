@@ -1,1 +1,5 @@
-fastapi uvicorn yfinance pandas 
+fastapi
+uvicorn
+yfinance
+pandas
+scikit-learn
