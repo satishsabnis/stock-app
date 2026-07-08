@@ -1,15 +1,16 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import { Search, TrendingDown, TrendingUp, ShieldAlert, Moon, Star, BarChart3, Activity } from 'lucide-react';
+import { Search, TrendingDown, TrendingUp, ShieldAlert, Moon, Star, BarChart3, Activity, ChevronRight, X } from 'lucide-react';
 
 export default function Home() {
-  // 1. Setup states to hold the live data from our Python server
   const [activeTicker, setActiveTicker] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("AAPL");
+  
+  // State to manage mobile sidebar slider visibility
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
-  // 2. Fetch data from our FastAPI backend server
   const fetchTickerData = async (tickerSymbol: string) => {
     try {
       setLoading(true);
@@ -34,7 +35,6 @@ export default function Home() {
     }
   };
 
-  // Run the fetch command automatically when the application opens
   useEffect(() => {
     fetchTickerData(searchQuery);
   }, []);
@@ -54,15 +54,41 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-50 font-sans flex">
+    <div className="min-h-screen bg-neutral-950 text-neutral-50 font-sans flex relative overflow-x-hidden">
       
-      {/* SIDEBAR: WATCHLIST TRACKER */}
-      <aside className="w-80 border-r border-neutral-800 bg-neutral-900/50 flex flex-col">
-        <div className="p-6 border-b border-neutral-800 flex items-center gap-3">
-          <Moon className="w-6 h-6 text-indigo-400" />
-          <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
-            PredictorFi
-          </span>
+      {/* FLOATING MOBILE DRAWER TOGGLE BUTTON (ONLY ON MOBILE) */}
+      <button 
+        onClick={() => setIsDrawerOpen(true)}
+        className="md:hidden fixed left-0 top-1/2 -translate-y-1/2 bg-indigo-600 text-white p-2 rounded-r-lg shadow-lg z-40 transition-transform active:scale-95 border border-indigo-500 border-l-0"
+      >
+        <ChevronRight className="w-5 h-5 animate-pulse" />
+      </button>
+
+      {/* BACKGROUND OVERLAY WHEN MOBILE DRAWER IS ACTIVE */}
+      {isDrawerOpen && (
+        <div 
+          onClick={() => setIsDrawerOpen(false)}
+          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
+        />
+      )}
+
+      {/* RESPONSIVE WATCHLIST PANEL */}
+      <aside className={`
+        fixed inset-y-0 left-0 w-80 border-r border-neutral-800 bg-neutral-900 z-50 transform transition-transform duration-300 ease-in-out
+        md:relative md:transform-none md:z-auto md:bg-neutral-900/50 flex flex-col
+        ${isDrawerOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        <div className="p-6 border-b border-neutral-800 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Moon className="w-6 h-6 text-indigo-400" />
+            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+              PredictorFi
+            </span>
+          </div>
+          {/* Close button inside mobile drawer */}
+          <button onClick={() => setIsDrawerOpen(false)} className="md:hidden text-neutral-400 hover:text-white">
+            <X className="w-5 h-5" />
+          </button>
         </div>
         
         <div className="p-4">
@@ -77,6 +103,7 @@ export default function Home() {
                 onClick={() => {
                   setSearchQuery(item.ticker);
                   fetchTickerData(item.ticker);
+                  setIsDrawerOpen(false); // Instantly slide the panel back on selection
                 }}
                 className={`w-full text-left p-3 rounded-lg flex items-center justify-between transition-all ${
                   activeTicker && item.ticker === activeTicker.ticker 
@@ -103,10 +130,10 @@ export default function Home() {
       </aside>
 
       {/* MAIN COMMAND CENTER */}
-      <main className="flex-1 flex flex-col overflow-y-auto">
+      <main className="flex-1 flex flex-col overflow-y-auto w-full">
         
         {/* TOP SEARCH HEADER */}
-        <header className="h-16 border-b border-neutral-800 px-8 flex items-center justify-between bg-neutral-950/80 backdrop-blur-md sticky top-0 z-10">
+        <header className="h-16 border-b border-neutral-800 px-8 flex items-center justify-between bg-neutral-950/80 backdrop-blur-md sticky top-0 z-10 pl-14 md:pl-8">
           <form onSubmit={handleSearchSubmit} className="relative w-full max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
             <input 
@@ -117,16 +144,15 @@ export default function Home() {
               className="w-full bg-neutral-900 border border-neutral-800 rounded-full py-1.5 pl-10 pr-4 text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
             />
           </form>
-          <div className="flex items-center gap-2 text-xs font-medium text-neutral-400 border border-neutral-800 rounded-full px-3 py-1.5 bg-neutral-900">
+          <div className="flex items-center gap-2 text-xs font-medium text-neutral-400 border border-neutral-800 rounded-full px-3 py-1.5 bg-neutral-900 hidden sm:flex">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
             Nightly Market System Ready
           </div>
         </header>
 
         {/* WORKSPACE CONTENT */}
-        <div className="p-8 max-w-6xl w-full mx-auto space-y-8">
+        <div className="p-4 md:p-8 max-w-6xl w-full mx-auto space-y-8">
           
-          {/* STRATEGY HERO BANNER */}
           <div className="relative overflow-hidden border border-neutral-800 bg-gradient-to-br from-neutral-900 to-neutral-950 p-6 rounded-2xl">
             <span className="text-xs font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-md">
               EOD Strategy Architecture
@@ -139,7 +165,6 @@ export default function Home() {
             </p>
           </div>
 
-          {/* SYSTEM STATES: LOADING AND ERRORS */}
           {loading && (
             <div className="p-12 border border-neutral-800 bg-neutral-900/10 rounded-2xl text-center space-y-3">
               <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -153,13 +178,11 @@ export default function Home() {
             </div>
           )}
 
-          {/* ACTIVE PORTAL ANALYTICS COMPONENT */}
           {!loading && !error && activeTicker && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
-              {/* STATISTICAL BOUNDARIES MODULE */}
               <div className="lg:col-span-2 border border-neutral-800 bg-neutral-900/30 rounded-2xl p-6 flex flex-col justify-between space-y-6">
-                <div className="flex justify-between items-start">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                   <div>
                     <div className="flex items-center gap-2">
                       <h2 className="text-3xl font-black tracking-tight">{activeTicker.ticker}</h2>
@@ -168,7 +191,7 @@ export default function Home() {
                     <p className="text-xs text-neutral-400 mt-1">Last Session Close: <span className="font-mono text-neutral-200">${activeTicker.last_close?.toFixed(2)}</span></p>
                   </div>
                   
-                  <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+                  <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border w-max ${
                     activeTicker.direction_trend === 'Bullish' 
                       ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
                       : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
@@ -178,7 +201,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* CORE DATA ENVELOPE GRID */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-neutral-800/60">
                   <div className="bg-neutral-900/80 p-4 rounded-xl border border-neutral-800">
                     <div className="text-xs text-neutral-400 font-medium mb-1">Defensive Lower Bound</div>
@@ -191,21 +213,20 @@ export default function Home() {
                     <div className="text-[10px] text-neutral-500 mt-1">Mathematical breakout roof</div>
                   </div>
                   
-                  {/* ADVANCED ALGORITHMS CONTENT CARD SECTION */}
                   {activeTicker.fibonacci && (
                     <div className="bg-neutral-900/80 p-4 rounded-xl border border-neutral-800 sm:col-span-2">
                       <div className="text-xs text-neutral-400 font-medium mb-2">Fibonacci Retracement Floors (60D)</div>
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div className="bg-neutral-950 p-2 rounded border border-neutral-800/50">
-                          <div className="text-[10px] text-neutral-500 font-bold">38.2% Level</div>
+                          <div className="text-[10px] text-neutral-500 font-bold">38.2%</div>
                           <div className="text-sm font-mono font-bold text-indigo-400">${activeTicker.fibonacci.level_382}</div>
                         </div>
                         <div className="bg-neutral-950 p-2 rounded border border-neutral-800/50">
-                          <div className="text-[10px] text-neutral-500 font-bold">50.0% Level</div>
+                          <div className="text-[10px] text-neutral-500 font-bold">50.0%</div>
                           <div className="text-sm font-mono font-bold text-indigo-400">${activeTicker.fibonacci.level_500}</div>
                         </div>
                         <div className="bg-neutral-950 p-2 rounded border border-neutral-800/50">
-                          <div className="text-[10px] text-neutral-500 font-bold">61.8% Level</div>
+                          <div className="text-[10px] text-neutral-500 font-bold">61.8%</div>
                           <div className="text-sm font-mono font-bold text-indigo-400">${activeTicker.fibonacci.level_618}</div>
                         </div>
                       </div>
@@ -224,7 +245,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* RIGHT COLUMN: AI TARGET & RSI MOMENTUM */}
               <div className="border border-neutral-800 bg-gradient-to-b from-neutral-900/40 to-neutral-950 rounded-2xl p-6 flex flex-col justify-between space-y-6">
                 <div>
                   <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-4 flex items-center gap-1.5">
@@ -239,37 +259,25 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* RSI PROGRESS CARD */}
                 {activeTicker.momentum_rsi !== undefined && (
                   <div className="bg-neutral-900/50 border border-neutral-800 p-4 rounded-xl space-y-2">
                     <div className="flex justify-between text-xs font-semibold">
-                      <span className="text-neutral-400 flex items-center gap-1"><Activity className="w-3 h-3 text-cyan-400" /> 14-Day RSI Momentum</span>
+                      <span className="text-neutral-400 flex items-center gap-1"><Activity className="w-3 h-3 text-cyan-400" /> 14-Day RSI</span>
                       <span className="text-cyan-400 font-mono">{activeTicker.momentum_rsi}</span>
                     </div>
                     <div className="w-full bg-neutral-800 rounded-full h-1.5 overflow-hidden">
-                      <div 
-                        className="bg-gradient-to-r from-cyan-500 to-blue-400 h-1.5 rounded-full" 
-                        style={{ width: `${activeTicker.momentum_rsi}%` }}
-                      ></div>
-                    </div>
-                    <div className="flex justify-between text-[9px] text-neutral-500 font-mono">
-                      <span>Oversold (30)</span>
-                      <span>Neutral</span>
-                      <span>Overbought (70)</span>
+                      <div className="bg-gradient-to-r from-cyan-500 to-blue-400 h-1.5 rounded-full" style={{ width: `${activeTicker.momentum_rsi}%` }}></div>
                     </div>
                   </div>
                 )}
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-neutral-400">Model Confidence Score</span>
+                    <span className="text-neutral-400">Model Confidence</span>
                     <span className="text-indigo-400 font-mono">{activeTicker.model_confidence_score}%</span>
                   </div>
                   <div className="w-full bg-neutral-800 rounded-full h-1.5 overflow-hidden">
-                    <div 
-                      className="bg-gradient-to-r from-indigo-500 to-cyan-400 h-1.5 rounded-full" 
-                      style={{ width: `${activeTicker.model_confidence_score}%` }}
-                    ></div>
+                    <div className="bg-gradient-to-r from-indigo-500 to-cyan-400 h-1.5 rounded-full" style={{ width: `${activeTicker.model_confidence_score}%` }}></div>
                   </div>
                 </div>
               </div>
