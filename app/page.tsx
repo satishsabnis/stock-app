@@ -57,7 +57,7 @@ export default function Home() {
     <div className="min-h-screen bg-neutral-950 text-neutral-50 font-sans flex">
       
       {/* SIDEBAR: WATCHLIST TRACKER */}
-      <aside className="w-80 border-r border-neutral-800 bg-neutral-900/50 flex flex-col hidden md:flex">
+      <aside className="w-80 border-r border-neutral-800 bg-neutral-900/50 flex flex-col">
         <div className="p-6 border-b border-neutral-800 flex items-center gap-3">
           <Moon className="w-6 h-6 text-indigo-400" />
           <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
