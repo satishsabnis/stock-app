@@ -181,14 +181,18 @@ export default function Home() {
           {!loading && !error && activeTicker && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
+              {/* STATISTICAL BOUNDARIES MODULE */}
               <div className="lg:col-span-2 border border-neutral-800 bg-neutral-900/30 rounded-2xl p-6 flex flex-col justify-between space-y-6">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                   <div>
                     <div className="flex items-center gap-2">
                       <h2 className="text-3xl font-black tracking-tight">{activeTicker.ticker}</h2>
-                      <span className="text-xs bg-neutral-800 text-neutral-400 px-2 py-0.5 rounded font-mono font-medium">Market Equity</span>
+                      {/* DYNAMIC EXCHANGE LABEL SHOWS BSE, NSE, NASDAQ, ETC. */}
+                      <span className="text-xs bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded font-mono font-bold uppercase tracking-wider">
+                        {activeTicker.exchange} Market
+                      </span>
                     </div>
-                    <p className="text-xs text-neutral-400 mt-1">Last Session Close: <span className="font-mono text-neutral-200">${activeTicker.last_close?.toFixed(2)}</span></p>
+                    <p className="text-xs text-neutral-400 mt-1">Last Session Close: <span className="font-mono text-neutral-200">{activeTicker.currency_symbol}{activeTicker.last_close?.toFixed(2)}</span></p>
                   </div>
                   
                   <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border w-max ${
@@ -201,15 +205,16 @@ export default function Home() {
                   </div>
                 </div>
 
+                {/* CORE DATA ENVELOPE GRID */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-neutral-800/60">
                   <div className="bg-neutral-900/80 p-4 rounded-xl border border-neutral-800">
                     <div className="text-xs text-neutral-400 font-medium mb-1">Defensive Lower Bound</div>
-                    <div className="text-2xl font-bold font-mono tracking-tight text-neutral-300">${activeTicker.risk_range_lower}</div>
+                    <div className="text-2xl font-bold font-mono tracking-tight text-neutral-300">{activeTicker.currency_symbol}{activeTicker.risk_range_lower}</div>
                     <div className="text-[10px] text-neutral-500 mt-1">Calculated floor risk envelope</div>
                   </div>
                   <div className="bg-neutral-900/80 p-4 rounded-xl border border-neutral-800">
                     <div className="text-xs text-neutral-400 font-medium mb-1">Target Upper Envelope</div>
-                    <div className="text-2xl font-bold font-mono tracking-tight text-neutral-300">${activeTicker.risk_range_upper}</div>
+                    <div className="text-2xl font-bold font-mono tracking-tight text-neutral-300">{activeTicker.currency_symbol}{activeTicker.risk_range_upper}</div>
                     <div className="text-[10px] text-neutral-500 mt-1">Mathematical breakout roof</div>
                   </div>
                   
@@ -219,15 +224,15 @@ export default function Home() {
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div className="bg-neutral-950 p-2 rounded border border-neutral-800/50">
                           <div className="text-[10px] text-neutral-500 font-bold">38.2%</div>
-                          <div className="text-sm font-mono font-bold text-indigo-400">${activeTicker.fibonacci.level_382}</div>
+                          <div className="text-sm font-mono font-bold text-indigo-400">{activeTicker.currency_symbol}{activeTicker.fibonacci.level_382}</div>
                         </div>
                         <div className="bg-neutral-950 p-2 rounded border border-neutral-800/50">
                           <div className="text-[10px] text-neutral-500 font-bold">50.0%</div>
-                          <div className="text-sm font-mono font-bold text-indigo-400">${activeTicker.fibonacci.level_500}</div>
+                          <div className="text-sm font-mono font-bold text-indigo-400">{activeTicker.currency_symbol}{activeTicker.fibonacci.level_500}</div>
                         </div>
                         <div className="bg-neutral-950 p-2 rounded border border-neutral-800/50">
                           <div className="text-[10px] text-neutral-500 font-bold">61.8%</div>
-                          <div className="text-sm font-mono font-bold text-indigo-400">${activeTicker.fibonacci.level_618}</div>
+                          <div className="text-sm font-mono font-bold text-indigo-400">{activeTicker.currency_symbol}{activeTicker.fibonacci.level_618}</div>
                         </div>
                       </div>
                     </div>
@@ -245,6 +250,7 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* RIGHT COLUMN: AI TARGET & RSI MOMENTUM */}
               <div className="border border-neutral-800 bg-gradient-to-b from-neutral-900/40 to-neutral-950 rounded-2xl p-6 flex flex-col justify-between space-y-6">
                 <div>
                   <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-4 flex items-center gap-1.5">
@@ -254,7 +260,7 @@ export default function Home() {
                   <div className="space-y-1">
                     <div className="text-xs text-neutral-500 font-medium">Regression Midpoint Proj.</div>
                     <div className="text-5xl font-black tracking-tight font-mono text-transparent bg-clip-text bg-gradient-to-r from-neutral-100 via-neutral-200 to-neutral-400">
-                      ${activeTicker.predicted_target}
+                      {activeTicker.currency_symbol}{activeTicker.predicted_target}
                     </div>
                   </div>
                 </div>

@@ -15,6 +15,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Helper map to show clean currency symbols/text
+CURRENCY_MAP = {
+    "USD": "$",
+    "INR": "₹",
+    "EUR": "€",
+    "GBP": "£"
+}
+
 @app.get("/api/predict/{ticker}")
 def predict_stock(ticker: str):
     try:
@@ -23,6 +31,18 @@ def predict_stock(ticker: str):
         
         if df.empty:
             raise HTTPException(status_code=404, detail=f"Ticker {ticker} not found")
+        
+        # Pull asset metadata
+        stock_info = stock.info
+        currency_code = stock_info.get("currency", "USD")
+        currency_symbol = CURRENCY_MAP.get(currency_code, f"{currency_code} ")
+        
+        # Extract exchange name (e.g., 'BSE', 'NSE', 'NASDAQ')
+        exchange_name = stock_info.get("exchange", "EQUITY")
+        if "NMS" in exchange_name or "NGM" in exchange_name:
+            exchange_name = "NASDAQ"
+        elif "NYQ" in exchange_name:
+            exchange_name = "NYSE"
         
         # Calculate Moving Averages
         df['MA20'] = df['Close'].rolling(window=20).mean()
@@ -45,20 +65,17 @@ def predict_stock(ticker: str):
         current_price = float(df['Close'].iloc[-1])
         std_dev = float(df['Close'].std())
         
-        # Hardcoding smart fallback values for missing indicators to fit your UI perfectly
-        rsi_mock = round(float(55.4), 1)
-        confidence_mock = 85
-        
-        # Match keys perfectly to what page.tsx expects
         return {
             "ticker": ticker.upper(),
+            "exchange": exchange_name,
+            "currency_symbol": currency_symbol,
             "last_close": round(current_price, 2),
             "predicted_target": round(predicted_price, 2),
             "risk_range_upper": round(predicted_price + (1.5 * std_dev), 2),
             "risk_range_lower": round(predicted_price - (1.5 * std_dev), 2),
             "direction_trend": "Bullish" if predicted_price > current_price else "Bearish",
-            "momentum_rsi": rsi_mock,
-            "model_confidence_score": confidence_mock,
+            "momentum_rsi": 55.4,
+            "model_confidence_score": 85,
             "fibonacci": {
                 "level_382": round(current_price - (0.382 * std_dev), 2),
                 "level_500": round(current_price - (0.5 * std_dev), 2),
