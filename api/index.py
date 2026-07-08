@@ -5,10 +5,8 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-# Vercel natively looks for the "app" variable to route serverless requests
 app = FastAPI()
 
-# Enable CORS so your Vercel frontend can talk to your Vercel backend securely
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,36 +18,28 @@ app.add_middleware(
 @app.get("/api/predict/{ticker}")
 def predict_stock(ticker: str):
     try:
-        # Fetch the historical market data (last 6 months)
         stock = yf.Ticker(ticker)
-        df = stock.history(period="6m")
+        df = stock.history(period="6mo")
         
         if df.empty:
-            raise HTTPException(status_code=404, detail=f"Ticker {ticker} not found or has no data.")
+            raise HTTPException(status_code=404, detail=f"Ticker {ticker} not found")
         
-        # Calculate standard 20-day and 50-day moving averages using Pandas
         df['MA20'] = df['Close'].rolling(window=20).mean()
         df['MA50'] = df['Close'].rolling(window=50).mean()
-        
-        # Prepare tracking arrays for linear regression forecasting
         df = df.dropna()
+        
         if len(df) < 10:
-            raise HTTPException(status_code=400, detail="Insufficient data points for calculation.")
+            raise HTTPException(status_code=400, detail="Insufficient data points")
             
         df['Time_Index'] = np.arange(len(df))
-        
         X = df[['Time_Index']].values
         y = df['Close'].values
         
-        # Initialize and fit the Scikit-Learn linear regression engine
         model = LinearRegression()
         model.fit(X, y)
         
-        # Predict the next market closing trajectory step
         next_index = len(df)
         predicted_price = float(model.predict([[next_index]])[0])
-        
-        # Calculate standard deviations for market boundaries
         current_price = float(df['Close'].iloc[-1])
         std_dev = float(df['Close'].std())
         
@@ -63,6 +53,5 @@ def predict_stock(ticker: str):
             "ma50": round(float(df['MA50'].iloc[-1]), 2),
             "status": "Success"
         }
-        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
