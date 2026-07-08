@@ -7,6 +7,7 @@ from sklearn.linear_model import LinearRegression
 
 app = FastAPI()
 
+# Enable CORS so your Next.js frontend can talk to this Python backend securely
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Helper map to show clean currency symbols/text
+# Helper map to show clean local currency symbols
 CURRENCY_MAP = {
     "USD": "$",
     "INR": "₹",
@@ -37,12 +38,16 @@ def predict_stock(ticker: str):
         currency_code = stock_info.get("currency", "USD")
         currency_symbol = CURRENCY_MAP.get(currency_code, f"{currency_code} ")
         
-        # Extract exchange name (e.g., 'BSE', 'NSE', 'NASDAQ')
+        # Extract raw exchange name from database
         exchange_name = stock_info.get("exchange", "EQUITY")
+        
+        # Clean up exchange codes to standard consumer naming
         if "NMS" in exchange_name or "NGM" in exchange_name:
             exchange_name = "NASDAQ"
         elif "NYQ" in exchange_name:
             exchange_name = "NYSE"
+        elif exchange_name == "NSI":
+            exchange_name = "NSE"
         
         # Calculate Moving Averages
         df['MA20'] = df['Close'].rolling(window=20).mean()
@@ -65,6 +70,7 @@ def predict_stock(ticker: str):
         current_price = float(df['Close'].iloc[-1])
         std_dev = float(df['Close'].std())
         
+        # Return perfectly structured data for app/page.tsx
         return {
             "ticker": ticker.upper(),
             "exchange": exchange_name,
